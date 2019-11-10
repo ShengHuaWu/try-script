@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/LocalTarget.build/master.swiftdeps"
+  },
+  "/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/Sources/LocalTarget/helpers.swift": {
+    "dependencies": "/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/LocalTarget.build/helpers.d",
+    "object": "/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/LocalTarget.build/helpers.swift.o",
+    "swiftmodule": "/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/LocalTarget.build/helpers~partial.swiftmodule",
+    "swift-dependencies": "/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/LocalTarget.build/helpers.swiftdeps"
+  }
+}

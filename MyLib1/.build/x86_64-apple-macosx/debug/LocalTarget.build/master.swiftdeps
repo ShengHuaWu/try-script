@@ -1,0 +1,5 @@
+version: "Apple Swift version 5.1.2 (swiftlang-1100.0.278 clang-1100.0.33.9)"
+options: "222349ea4d63af9f4015f14f8b82790e"
+build_time: [1573330748, 466991000]
+inputs:
+  "/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/Sources/LocalTarget/helpers.swift": [1573330630, 777349763]

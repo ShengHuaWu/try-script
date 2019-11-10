@@ -1,0 +1,30 @@
+client:
+  name: basic
+tools: {}
+targets:
+  "main": ["/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/LocalTarget.swiftmodule","<LocalTarget-debug.module>"]
+  "test": ["/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/LocalTarget.swiftmodule","<LocalTarget-debug.module>"]
+  "LocalTarget-debug.module": ["/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/LocalTarget.swiftmodule","<LocalTarget-debug.module>"]
+default: "main"
+commands: 
+  "<C.LocalTarget-debug.module>":
+    tool: phony
+    inputs: ["/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/LocalTarget.swiftmodule"]
+    outputs: ["<LocalTarget-debug.module>"]
+
+  "C.LocalTarget-debug.module":
+    tool: swift-compiler
+    executable: "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    module-name: "LocalTarget"
+    module-output-path: "/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/LocalTarget.swiftmodule"
+    inputs: ["/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/Sources/LocalTarget/helpers.swift"]
+    outputs: ["/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/LocalTarget.build/helpers.swift.o","/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/LocalTarget.swiftmodule"]
+    import-paths: ["/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug"]
+    temps-path: "/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/LocalTarget.build"
+    objects: ["/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/LocalTarget.build/helpers.swift.o"]
+    other-args: ["-target","x86_64-apple-macosx10.10","-swift-version","5","-enable-batch-mode","-index-store-path","/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/index/store","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Onone","-g","-enable-testing","-j4","-DSWIFT_PACKAGE","-DDEBUG","-module-cache-path","/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/.build/x86_64-apple-macosx/debug/ModuleCache","-parseable-output","-Xfrontend","-color-diagnostics"]
+    sources: ["/Users/shenghuawu/Development/Swift/try-script/LocalDependencies/Sources/LocalTarget/helpers.swift"]
+    is-library: true
+    enable-whole-module-optimization: false
+    num-threads: "4"
+
