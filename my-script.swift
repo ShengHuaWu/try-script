@@ -14,34 +14,96 @@ import MyLib1 // ./MyLib1
 
 justAFunction() // This is from `MyLib1`
 
-// Arguments (options) parsing
-// For more parsing rules, please read https://rderik.com/blog/command-line-argument-parsing-using-swift-package-manager-s/
-do {
+typealias Task<S> = (inout S) throws -> Void
+
+func combine<S>(_ tasks: Task<S>...) -> Task<S> {
+    return { state in
+        try tasks.forEach { try $0(&state) }
+    }
+}
+
+struct State {
+    var outputs: [String] = []
     let parser = ArgumentParser(commandName: "ap",
                                 usage: "arguments parsing",
                                 overview: "The command is used for argument parsing")
-    
-    let enable = parser.add(option: "--enable",
-                            shortName: "-e",
-                            kind: Bool.self,
-                            usage: "Enable something",
-                            completion: ShellCompletion.none)
-    let input = parser.add(option: "--input",
-                           shortName: "-i",
-                           kind: String.self,
-                           usage: "An input filename",
-                           completion: .filename)
-    
-    let argsv = Array(CommandLine.arguments.dropFirst())
-    let parguments = try parser.parse(argsv)
-    
-    if let isEnabled = parguments.get(enable) {
-        print("Enabled: \(isEnabled)")
+    var enabledOption: OptionArgument<Bool>?
+    var inputOption: OptionArgument<String>?
+}
+
+func setUpEnabledParsing() -> Task<State> {
+    return { state in
+        let enabled = state.parser.add(option: "--enabled",
+                                       shortName: "-e",
+                                       kind: Bool.self,
+                                       usage: "Enable something",
+                                       completion: ShellCompletion.none)
+        state.enabledOption = enabled
     }
-    
-    if let filename = parguments.get(input) {
-        print("Using filename: \(filename)")
+}
+
+func setUpInputParsing() -> Task<State> {
+    return { state in
+        let input = state.parser.add(option: "--input",
+                                     shortName: "-i",
+                                     kind: String.self,
+                                     usage: "An input filename",
+                                     completion: .filename)
+        state.inputOption = input
     }
+}
+
+func parseArguments() -> Task<State> {
+    return { state in
+        let argsv = Array(CommandLine.arguments.dropFirst())
+        let parguments = try state.parser.parse(argsv)
+
+        if let isEnabled = parguments.get(state.enabledOption!) {
+            state.outputs.append("Enabled: \(isEnabled)")
+        }
+
+        if let filename = parguments.get(state.inputOption!) {
+            state.outputs.append("Using filename: \(filename)")
+        }
+    }
+}
+
+// Arguments (options) parsing
+// For more parsing rules, please read https://rderik.com/blog/command-line-argument-parsing-using-swift-package-manager-s/
+do {
+//    let parser = ArgumentParser(commandName: "ap",
+//                                usage: "arguments parsing",
+//                                overview: "The command is used for argument parsing")
+//
+//    let enable = parser.add(option: "--enable",
+//                            shortName: "-e",
+//                            kind: Bool.self,
+//                            usage: "Enable something",
+//                            completion: ShellCompletion.none)
+//    let input = parser.add(option: "--input",
+//                           shortName: "-i",
+//                           kind: String.self,
+//                           usage: "An input filename",
+//                           completion: .filename)
+//
+//    let argsv = Array(CommandLine.arguments.dropFirst())
+//    let parguments = try parser.parse(argsv)
+//
+//    if let isEnabled = parguments.get(enable) {
+//        print("Enabled: \(isEnabled)")
+//    }
+//
+//    if let filename = parguments.get(input) {
+//        print("Using filename: \(filename)")
+//    }
+    
+    var initialState = State()
+    try combine(
+        setUpEnabledParsing(),
+        setUpInputParsing(),
+        parseArguments()
+    )(&initialState)
+    print(initialState.outputs)
 
 } catch ArgumentParserError.expectedValue(let value) {
     print("Missing value for argument \(value).")
