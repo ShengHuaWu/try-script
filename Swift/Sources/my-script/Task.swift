@@ -1,25 +1,14 @@
 // Functional way
-typealias Effect<A> = () -> A
-typealias Task<State, Output> = (inout State) throws -> [Effect<Output>]
+typealias Effect = () -> Void
+typealias Task<State> = (inout State) throws -> [Effect]
 
-func combine<State, Output>(_ tasks: Task<State, Output>...) -> Task<State, Output> {
+func combine<State>(_ tasks: Task<State>...) -> Task<State> {
     return { state in
         return try tasks.flatMap { try $0(&state) }
     }
 }
 
-func map<State, A, B>(_ task: @escaping Task<State, A>, _ f: @escaping (A) -> B) -> Task<State, B> {
-    return { state in
-        return try task(&state).map { effect in
-            let a = effect()
-            return {
-                f(a)
-            }
-        }
-    }
-}
-
-func pullback<GlobalState, LocalState, Output>(_ task: @escaping Task<LocalState, Output>, _ kp: WritableKeyPath<GlobalState, LocalState>) -> Task<GlobalState, Output> {
+func pullback<GlobalState, LocalState>(_ task: @escaping Task<LocalState>, _ kp: WritableKeyPath<GlobalState, LocalState>) -> Task<GlobalState> {
     return { globalState in
         var localState = globalState[keyPath: kp]
         let outputs = try task(&localState)
