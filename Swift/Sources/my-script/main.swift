@@ -8,50 +8,117 @@ import MyLib1
 
 justAFunction() // This is from `MyLib1`
 
-// Arguments (options) parsing
-// For more parsing rules, please read https://rderik.com/blog/command-line-argument-parsing-using-swift-package-manager-s/
-do {
-    let parser = ArgumentParser(commandName: "ap",
-                                usage: "arguments parsing",
-                                overview: "The command is used for argument parsing")
-    
-    let enable = parser.add(option: "--enable",
-                            shortName: "-e",
-                            kind: Bool.self,
-                            usage: "Enable something",
-                            completion: ShellCompletion.none)
-    let input = parser.add(option: "--input",
-                           shortName: "-i",
-                           kind: String.self,
-                           usage: "An input filename",
-                           completion: .filename)
-    
-    let argsv = Array(CommandLine.arguments.dropFirst())
-    let parguments = try parser.parse(argsv)
-    
-    if let isEnabled = parguments.get(enable) {
-        print("Enabled: \(isEnabled)")
-    }
-    
-    if let filename = parguments.get(input) {
-        print("Using filename: \(filename)")
-    }
+// Functional way
+typealias Task<State> = (inout State) throws -> Void
 
-} catch ArgumentParserError.expectedValue(let value) {
-    print("Missing value for argument \(value).")
-} catch ArgumentParserError.expectedArguments(let parser, let stringArray) {
-    print("Parser: \(parser) Missing arguments: \(stringArray.joined()).")
-} catch {
-    print(error.localizedDescription)
+func combine<State>(_ tasks: Task<State>...) -> Task<State> {
+    return { state in
+        try tasks.forEach { try $0(&state) }
+    }
 }
 
-// Basic functionalities
-let downloadsDir = "~/Downloads"
-let newTempDir = "NewTemp"
-let newFile = "my-file.txt"
-let newFile1 = "my-file1.txt"
-let newFile2 = "my-file2.txt"
-let newText = "this is a good text."
+func pullback<GlobalState, LocalState>(_ task: @escaping Task<LocalState>, _ kp: WritableKeyPath<GlobalState, LocalState>) -> Task<GlobalState> {
+    return { globalState in
+        var localState = globalState[keyPath: kp]
+        try task(&localState)
+        globalState[keyPath: kp] = localState
+    }
+}
+
+struct ShellState {
+    var enableOption: OptionArgument<Bool>?
+    var inputOption: OptionArgument<String>?
+    var outputs: [String] = []
+}
+
+struct FileState {
+    let downloadsDir = "~/Downloads"
+    let newTempDir = "NewTemp"
+    let newFile = "my-file.txt"
+    let newFile1 = "my-file1.txt"
+    let newFile2 = "my-file2.txt"
+    let newText = "this is a good text."
+    var outputs: [String]
+}
+
+struct ArgumentParsingState {
+    let parser = ArgumentParser(commandName: "my-script", usage: "argument parsing & more ...", overview: "This is a testing script")
+    var enableOption: OptionArgument<Bool>?
+    var inputOption: OptionArgument<String>?
+    var outputs: [String]
+}
+
+extension ShellState {
+    var argumentParsingState: ArgumentParsingState {
+        set {
+            enableOption = newValue.enableOption
+            inputOption = newValue.inputOption
+            outputs += newValue.outputs
+        }
+        
+        get {
+            ArgumentParsingState(enableOption: enableOption, inputOption: inputOption, outputs: outputs)
+        }
+    }
+    
+    var fileState: FileState {
+        set {
+            outputs += newValue.outputs
+        }
+        
+        get {
+            FileState(outputs: outputs)
+        }
+    }
+}
+
+func logging(_ task: @escaping Task<ShellState>) -> Task<ShellState> {
+    return { state in
+        print("before everything")
+        try task(&state)
+        print(state.outputs)
+        print("after everything")
+    }
+}
+
+// Arguments (options) parsing
+// For more parsing rules, please read https://rderik.com/blog/command-line-argument-parsing-using-swift-package-manager-s/
+let setUpArgumentParsing: Task<ArgumentParsingState> = { state in
+    let enable = state.parser.add(option: "--enable",
+                                  shortName: "-e",
+                                  kind: Bool.self,
+                                  usage: "Enable something",
+                                  completion: ShellCompletion.none)
+    state.enableOption = enable
+    
+    let input = state.parser.add(option: "--input",
+                                 shortName: "-i",
+                                 kind: String.self,
+                                 usage: "An input filename",
+                                 completion: .filename)
+    state.inputOption = input
+}
+
+let parseArguments: Task<ArgumentParsingState> = { state in
+    let argsv = Array(CommandLine.arguments.dropFirst())
+    let parguments = try state.parser.parse(argsv)
+        
+    if let enable = state.enableOption, let isEnabled = parguments.get(enable) {
+        state.outputs.append("Enabled: \(isEnabled)")
+    }
+    
+    if let input = state.inputOption, let filename = parguments.get(input) {
+        state.outputs.append("Using filename: \(filename)")
+    }
+}
+
+let parse: Task<ShellState> = pullback(
+    combine(
+        setUpArgumentParsing,
+        parseArguments
+    ),
+    \.argumentParsingState
+)
 
 func run(command: String, arguments: [String] = [], at path: String = ".") throws -> String {
     let process = Process()
@@ -74,33 +141,88 @@ func run(command: String, arguments: [String] = [], at path: String = ".") throw
     return String(data: data, encoding: .utf8) ?? "There is no output for \(command)"
 }
 
-func tryProcess() throws {
-    print(try run(command: "sh adb-run-tests.sh", arguments: ["-h"], at: "~/Development/swift-everywhere-toolchain/Platypus"))
-    print(try run(command: "make", arguments: ["help"], at: "~/Development/swift-everywhere-toolchain"))
-    
-    print(try run(command: "mkdir", arguments: ["-p", newTempDir], at: downloadsDir))
-    print(try run(command: "touch", arguments: [newFile], at: "\(downloadsDir)/\(newTempDir)"))
-    print(try run(command: "echo", arguments: [newText, ">>", newFile], at: "\(downloadsDir)/\(newTempDir)"))
-    print(try run(command: "cat", arguments: [newFile], at: "\(downloadsDir)/\(newTempDir)"))
-    print(try run(command: "ls", arguments: ["-al"], at: "\(downloadsDir)/\(newTempDir)"))
-    
-    print(try run(command: "cp", arguments: [newFile, newFile1], at: "\(downloadsDir)/\(newTempDir)"))
-    print(try run(command: "cat", arguments: [newFile1], at: "\(downloadsDir)/\(newTempDir)"))
-    print(try run(command: "ls", arguments: ["-al"], at: "\(downloadsDir)/\(newTempDir)"))
-    
-    print(try run(command: "mv", arguments: [newFile, newFile2], at: "\(downloadsDir)/\(newTempDir)"))
-    print(try run(command: "cat", arguments: [newFile2], at: "\(downloadsDir)/\(newTempDir)"))
-    print(try run(command: "ls", arguments: ["-al"], at: "\(downloadsDir)/\(newTempDir)"))
-    
-    print(try run(command: "rm", arguments: ["*"], at: "\(downloadsDir)/\(newTempDir)"))
-    print(try run(command: "rmdir", arguments: [newTempDir], at: downloadsDir))
-    print(try run(command: "ls", arguments: ["-al"], at: downloadsDir))
-
-    print(try run(command: "python", arguments: ["--version"]))
+// Basic functionalities
+let customHelp: Task<FileState> = { state in
+    state.outputs.append(
+        try run(command: "sh adb-run-tests.sh", arguments: ["-h"], at: "~/Development/swift-everywhere-toolchain/Platypus")
+    )
 }
 
+let makeHelp: Task<FileState> = { state in
+    state.outputs.append(
+        try run(command: "make", arguments: ["help"], at: "~/Development/swift-everywhere-toolchain")
+    )
+}
+
+let createDir: Task<FileState> = { state in
+    state.outputs.append(
+        try run(command: "mkdir", arguments: ["-p", state.newTempDir], at: state.downloadsDir)
+    )
+}
+
+let createFile: Task<FileState> = { state in
+    state.outputs.append(
+        try run(command: "touch", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
+    )
+}
+
+let insertTextToNewFile: Task<FileState> = { state in
+    state.outputs.append(
+        try run(command: "echo", arguments: [state.newText, ">>", state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
+    )
+}
+
+let showContentOfNewFile: Task<FileState> = { state in
+    state.outputs.append(
+        try run(command: "cat", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
+    )
+}
+
+let listFiles: Task<FileState> = { state in
+    state.outputs.append(
+        try run(command: "ls", arguments: ["-al"], at: "\(state.downloadsDir)/\(state.newTempDir)")
+    )
+}
+
+let removeAllFiles: Task<FileState> = { state in
+    state.outputs.append(
+        try run(command: "rm", arguments: ["*"], at: "\(state.downloadsDir)/\(state.newTempDir)")
+    )
+}
+
+let removeDir: Task<FileState> = { state in
+    state.outputs.append(
+        try run(command: "rmdir", arguments: [state.newTempDir], at: state.downloadsDir)
+    )
+}
+
+let file: Task<ShellState> = pullback(
+    combine(
+        customHelp,
+        makeHelp,
+        createDir,
+        createFile,
+        insertTextToNewFile,
+        showContentOfNewFile,
+        listFiles,
+        removeAllFiles,
+        removeDir
+    ),
+    \.fileState
+)
+
 do {
-    try tryProcess()
-} catch let error {
+    var initialState = ShellState()
+    try logging(
+        combine(
+            parse,
+            file
+        )
+        )(&initialState)
+} catch ArgumentParserError.expectedValue(let value) {
+    print("Missing value for argument \(value).")
+} catch ArgumentParserError.expectedArguments(let parser, let stringArray) {
+    print("Parser: \(parser) Missing arguments: \(stringArray.joined()).")
+} catch {
     print("Error occurs: \n\(error.localizedDescription)")
 }
