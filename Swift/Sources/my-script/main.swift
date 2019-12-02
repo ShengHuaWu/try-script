@@ -7,7 +7,6 @@ justAFunction() // This is from `MyLib1`
 struct ShellState {
     var enableOption: OptionArgument<Bool>?
     var inputOption: OptionArgument<String>?
-    var outputs: [String] = []
 }
 
 extension ShellState {
@@ -15,40 +14,38 @@ extension ShellState {
         set {
             enableOption = newValue.enableOption
             inputOption = newValue.inputOption
-            outputs += newValue.outputs
         }
         
         get {
-            ArgumentParsingState(enableOption: enableOption, inputOption: inputOption, outputs: outputs)
+            ArgumentParsingState(enableOption: enableOption, inputOption: inputOption)
         }
     }
     
     var fileState: FileState {
-        set {
-            outputs += newValue.outputs
-        }
+        set {}
         
         get {
-            FileState(outputs: outputs)
+            FileState()
         }
     }
 }
 
-func logging(_ task: @escaping Task<ShellState>) -> Task<ShellState> {
+func logging(_ task: @escaping Task<ShellState, String>) -> Task<ShellState, String> {
     return { state in
         print("before everything")
-        try task(&state)
-        print(state.outputs)
+        let outputs = try task(&state)
+        outputs.forEach { print($0()) }
         print("after everything")
+        return outputs
     }
 }
 
 do {
     var initialState = ShellState()
-    try logging(
+    _ = try logging(
         combine(
-            parse,
-            file
+            pullback(parse, \.argumentParsingState),
+            pullback(file, \.fileState)
         )
         )(&initialState)
 } catch ArgumentParserError.expectedValue(let value) {

@@ -7,9 +7,9 @@ struct FileState {
     let newFile1 = "my-file1.txt"
     let newFile2 = "my-file2.txt"
     let newText = "this is a good text."
-    var outputs: [String]
 }
 
+@discardableResult
 func run(command: String, arguments: [String] = [], at path: String = ".") throws -> String {
     let process = Process()
     let pipe = Pipe()
@@ -32,71 +32,59 @@ func run(command: String, arguments: [String] = [], at path: String = ".") throw
 }
 
 // Basic functionalities
-let customHelp: Task<FileState> = { state in
-    state.outputs.append(
-        try run(command: "sh adb-run-tests.sh", arguments: ["-h"], at: "~/Development/swift-everywhere-toolchain/Platypus")
-    )
+let customHelp: Task<FileState, String> = { state in
+    let output = try run(command: "sh adb-run-tests.sh", arguments: ["-h"], at: "~/Development/swift-everywhere-toolchain/Platypus")
+    return [{ output }]
 }
 
-let makeHelp: Task<FileState> = { state in
-    state.outputs.append(
-        try run(command: "make", arguments: ["help"], at: "~/Development/swift-everywhere-toolchain")
-    )
+let makeHelp: Task<FileState, String> = { state in
+    let output = try run(command: "make", arguments: ["help"], at: "~/Development/swift-everywhere-toolchain")
+    return [{ output }]
 }
 
-let createDir: Task<FileState> = { state in
-    state.outputs.append(
-        try run(command: "mkdir", arguments: ["-p", state.newTempDir], at: state.downloadsDir)
-    )
+let createDir: Task<FileState, Void> = { state in
+    try run(command: "mkdir", arguments: ["-p", state.newTempDir], at: state.downloadsDir)
+    return []
 }
 
-let createFile: Task<FileState> = { state in
-    state.outputs.append(
-        try run(command: "touch", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
-    )
+let createFile: Task<FileState, Void> = { state in
+    try run(command: "touch", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
+    return []
 }
 
-let insertTextToNewFile: Task<FileState> = { state in
-    state.outputs.append(
-        try run(command: "echo", arguments: [state.newText, ">>", state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
-    )
+let insertTextToNewFile: Task<FileState, Void> = { state in
+    try run(command: "echo", arguments: [state.newText, ">>", state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
+    return []
 }
 
-let showContentOfNewFile: Task<FileState> = { state in
-    state.outputs.append(
-        try run(command: "cat", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
-    )
+let showContentOfNewFile: Task<FileState, String> = { state in
+    let output = try run(command: "cat", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
+    return [{ output }]
 }
 
-let listFiles: Task<FileState> = { state in
-    state.outputs.append(
-        try run(command: "ls", arguments: ["-al"], at: "\(state.downloadsDir)/\(state.newTempDir)")
-    )
+let listFiles: Task<FileState, String> = { state in
+    let output = try run(command: "ls", arguments: ["-al"], at: "\(state.downloadsDir)/\(state.newTempDir)")
+    return [{ output }]
 }
 
-let removeAllFiles: Task<FileState> = { state in
-    state.outputs.append(
-        try run(command: "rm", arguments: ["*"], at: "\(state.downloadsDir)/\(state.newTempDir)")
-    )
+let removeAllFiles: Task<FileState, Void> = { state in
+    try run(command: "rm", arguments: ["*"], at: "\(state.downloadsDir)/\(state.newTempDir)")
+    return []
 }
 
-let removeDir: Task<FileState> = { state in
-    state.outputs.append(
-        try run(command: "rmdir", arguments: [state.newTempDir], at: state.downloadsDir)
-    )
+let removeDir: Task<FileState, Void> = { state in
+    try run(command: "rmdir", arguments: [state.newTempDir], at: state.downloadsDir)
+    return []
 }
 
-let file: Task<ShellState> = pullback(
-    combine(
-        customHelp,
-        makeHelp,
-        createDir,
-        createFile,
-        insertTextToNewFile,
-        showContentOfNewFile,
-        listFiles,
-        removeAllFiles,
-        removeDir
-    ),
-    \.fileState
+let file: Task<FileState, String> = combine(
+    customHelp,
+    makeHelp,
+    map(createDir, { "" }),
+    map(createFile, { "" }),
+    map(insertTextToNewFile, { "" }),
+    showContentOfNewFile,
+    listFiles,
+    map(removeAllFiles, { "" }),
+    map(removeDir, { "" })
 )
