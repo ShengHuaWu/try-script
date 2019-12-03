@@ -30,24 +30,17 @@ extension ShellState {
     }
 }
 
-func logging(_ task: @escaping Task<ShellState>) -> Task<ShellState> {
-    return { state in
-        print("before everything")
-        let effects = try task(&state)
-        print("after everything")
-        return effects
-    }
-}
+// TODO: Shell action & enum property
 
 do {
-    var initialState = ShellState()
-    let effects = try logging(
-        combine(
-            pullback(parse, \.argumentParsingState),
-            pullback(file, \.fileState)
-        )
-        )(&initialState)
-    effects.forEach { $0() }
+//    var initialState = ShellState()
+//    let effects = try logging(
+//        combine(
+//            pullback(parse, \.argumentParsingState),
+//            pullback(file, \.fileState)
+//        )
+//        )(&initialState)
+//    effects.forEach { $0() }
 } catch ArgumentParserError.expectedValue(let value) {
     print("Missing value for argument \(value).")
 } catch ArgumentParserError.expectedArguments(let parser, let stringArray) {

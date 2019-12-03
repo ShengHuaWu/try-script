@@ -9,6 +9,16 @@ struct FileState {
     let newText = "this is a good text."
 }
 
+enum FileAction {
+    case createDir
+    case createFile
+    case insertTextToNewFile
+    case showContentOfNewFile
+    case listFiles
+    case removeAllFiles
+    case removeDir
+}
+
 @discardableResult
 func run(command: String, arguments: [String] = [], at path: String = ".") throws -> String {
     let process = Process()
@@ -31,68 +41,38 @@ func run(command: String, arguments: [String] = [], at path: String = ".") throw
     return String(data: data, encoding: .utf8) ?? "There is no output for \(command)"
 }
 
-// Basic functionalities
-let customHelp: Task<FileState> = { state in
-    let output = try run(command: "sh adb-run-tests.sh", arguments: ["-h"], at: "~/Development/swift-everywhere-toolchain/Platypus")
-    return [
-        { print(output) }
-    ]
+let fileReducer: Reducer<FileState, FileAction> = { state, action in
+    switch action {
+    case .createDir:
+        try run(command: "mkdir", arguments: ["-p", state.newTempDir], at: state.downloadsDir)
+        return []
+        
+    case .createFile:
+        try run(command: "touch", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
+        return []
+        
+    case .insertTextToNewFile:
+        try run(command: "echo", arguments: [state.newText, ">>", state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
+        return []
+        
+    case .showContentOfNewFile:
+        let output = try run(command: "cat", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
+        return [
+            { _ in print(output) }
+        ]
+        
+    case .listFiles:
+        let output = try run(command: "ls", arguments: ["-al"], at: "\(state.downloadsDir)/\(state.newTempDir)")
+        return [
+            { _ in print(output) }
+        ]
+        
+    case .removeAllFiles:
+        try run(command: "rm", arguments: ["*"], at: "\(state.downloadsDir)/\(state.newTempDir)")
+        return []
+        
+    case .removeDir:
+        try run(command: "rmdir", arguments: [state.newTempDir], at: state.downloadsDir)
+        return []
+    }
 }
-
-let makeHelp: Task<FileState> = { state in
-    let output = try run(command: "make", arguments: ["help"], at: "~/Development/swift-everywhere-toolchain")
-    return [
-        { print(output) }
-    ]
-}
-
-let createDir: Task<FileState> = { state in
-    try run(command: "mkdir", arguments: ["-p", state.newTempDir], at: state.downloadsDir)
-    return []
-}
-
-let createFile: Task<FileState> = { state in
-    try run(command: "touch", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
-    return []
-}
-
-let insertTextToNewFile: Task<FileState> = { state in
-    try run(command: "echo", arguments: [state.newText, ">>", state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
-    return []
-}
-
-let showContentOfNewFile: Task<FileState> = { state in
-    let output = try run(command: "cat", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
-    return [
-        { print(output) }
-    ]
-}
-
-let listFiles: Task<FileState> = { state in
-    let output = try run(command: "ls", arguments: ["-al"], at: "\(state.downloadsDir)/\(state.newTempDir)")
-    return [
-        { print(output) }
-    ]
-}
-
-let removeAllFiles: Task<FileState> = { state in
-    try run(command: "rm", arguments: ["*"], at: "\(state.downloadsDir)/\(state.newTempDir)")
-    return []
-}
-
-let removeDir: Task<FileState> = { state in
-    try run(command: "rmdir", arguments: [state.newTempDir], at: state.downloadsDir)
-    return []
-}
-
-let file: Task<FileState> = combine(
-    customHelp,
-    makeHelp,
-    createDir,
-    createFile,
-    insertTextToNewFile,
-    showContentOfNewFile,
-    listFiles,
-    removeAllFiles,
-    removeDir
-)
