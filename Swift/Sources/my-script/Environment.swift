@@ -1,9 +1,13 @@
 struct Environment {
     var argumentParsingClient: () -> ArgumentParsingClient
+    var commandClient: () -> CommandClient
 }
 
 extension Environment {
-    static let live = Environment(argumentParsingClient: { ArgumentParsingClient() })
+    static let live = Environment(
+        argumentParsingClient: { ArgumentParsingClient() },
+        commandClient: { CommandClient() }
+    )
 }
 
 #if DEBUG
