@@ -62,12 +62,14 @@ let shellReducer: Reducer<ShellState, ShellAction> = combine(
 let store = Store<ShellState, ShellAction>(initialState: ShellState(), reducer: shellReducer)
 
 // Actual shell script
-store.send(.argumentParsing(.parse))
-store.send(.file(.createDir))
-store.send(.file(.createFile))
-store.send(.file(.insertTextToNewFile))
-store.send(.file(.showContentOfNewFile))
-store.send(.file(.listFiles))
-store.send(.file(.removeAllFiles))
-store.send(.file(.listFiles))
-store.send(.file(.removeDir))
+[
+    .argumentParsing(.parse),
+    .file(.createDir),
+    .file(.createFile),
+    .file(.insertTextToNewFile),
+    .file(.showContentOfNewFile),
+    .file(.listFiles),
+    .file(.removeAllFiles),
+    .file(.listFiles),
+    .file(.removeDir)
+].forEach(store.send)
