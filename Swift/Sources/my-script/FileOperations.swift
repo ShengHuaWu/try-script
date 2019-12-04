@@ -41,38 +41,96 @@ func run(command: String, arguments: [String] = [], at path: String = ".") throw
     return String(data: data, encoding: .utf8) ?? "There is no output for \(command)"
 }
 
+// TODO: Handle throwing logic
 let fileReducer: Reducer<FileState, FileAction> = { state, action in
     switch action {
     case .createDir:
-        try run(command: "mkdir", arguments: ["-p", state.newTempDir], at: state.downloadsDir)
-        return []
+        do {
+            try run(command: "mkdir", arguments: ["-p", state.newTempDir], at: state.downloadsDir)
+            return []
+        } catch {
+            return [
+                Effect { _ in
+                    print("Error occurs: \n\(error.localizedDescription)")
+                }
+            ]
+        }
         
     case .createFile:
-        try run(command: "touch", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
-        return []
+        do {
+            try run(command: "touch", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
+            return []
+        } catch {
+            return [
+                Effect { _ in
+                    print("Error occurs: \n\(error.localizedDescription)")
+                }
+            ]
+        }
         
     case .insertTextToNewFile:
-        try run(command: "echo", arguments: [state.newText, ">>", state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
-        return []
+        do {
+            try run(command: "echo", arguments: [state.newText, ">>", state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
+            return []
+        } catch {
+            return [
+                Effect { _ in
+                    print("Error occurs: \n\(error.localizedDescription)")
+                }
+            ]
+        }
         
     case .showContentOfNewFile:
-        let output = try run(command: "cat", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
-        return [
-            { _ in print(output) }
-        ]
+        do {
+            let output = try run(command: "cat", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
+            return [
+                Effect { _ in print(output) }
+            ]
+        } catch {
+            return [
+                Effect { _ in
+                    print("Error occurs: \n\(error.localizedDescription)")
+                }
+            ]
+        }
         
     case .listFiles:
-        let output = try run(command: "ls", arguments: ["-al"], at: "\(state.downloadsDir)/\(state.newTempDir)")
-        return [
-            { _ in print(output) }
-        ]
+        do {
+            let output = try run(command: "ls", arguments: ["-al"], at: "\(state.downloadsDir)/\(state.newTempDir)")
+            return [
+                Effect { _ in print(output) }
+            ]
+        } catch {
+            return [
+                Effect { _ in
+                    print("Error occurs: \n\(error.localizedDescription)")
+                }
+            ]
+        }
         
     case .removeAllFiles:
-        try run(command: "rm", arguments: ["*"], at: "\(state.downloadsDir)/\(state.newTempDir)")
-        return []
+        do {
+            try run(command: "rm", arguments: ["*"], at: "\(state.downloadsDir)/\(state.newTempDir)")
+            return []
+        } catch {
+            return [
+                Effect { _ in
+                    print("Error occurs: \n\(error.localizedDescription)")
+                }
+            ]
+        }
         
     case .removeDir:
-        try run(command: "rmdir", arguments: [state.newTempDir], at: state.downloadsDir)
-        return []
+        do {
+            try run(command: "rmdir", arguments: [state.newTempDir], at: state.downloadsDir)
+            return []
+        } catch {
+            return [
+                Effect { _ in
+                    print("Error occurs: \n\(error.localizedDescription)")
+                }
+            ]
+        }
+        
     }
 }
