@@ -52,7 +52,6 @@ let fileReducer: Reducer<FileState, FileAction> = { state, action in
     case .listFiles:
         return [
             Current.commandClient()
-//                .run(command: "ls", arguments: ["-al"], at: "\(state.downloadsDir)/\(state.newTempDir)")
                 .run(command: "ls", arguments: ["-al"], at: "\(state.downloadsDir)/\(state.newTempDir)")
                 .fireAndForget()
         ]

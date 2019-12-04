@@ -54,7 +54,7 @@ extension ShellAction {
     }
 }
 
-// Store setup
+// Store initiative
 let shellReducer: Reducer<ShellState, ShellAction> = combine(
     pullback(argumentParsingReducer, value: \.argumentParsing, action: \.argumentParsing),
     pullback(fileReducer, value: \.file, action: \.file)
@@ -62,6 +62,7 @@ let shellReducer: Reducer<ShellState, ShellAction> = combine(
 let store = Store<ShellState, ShellAction>(initialState: ShellState(), reducer: shellReducer)
 
 // Actual shell script
+// TODO: How to stop if there is an error?
 [
     .argumentParsing(.parse),
     .file(.createDir),
