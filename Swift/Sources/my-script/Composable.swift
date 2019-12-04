@@ -1,5 +1,5 @@
 struct Effect<A> {
-    let run: (@escaping (A) -> Void) -> Void
+    let run: (@escaping (A) -> Void) -> Void // TODO: Append `throws` here to stop sending actions
     
     func map<B>(_ f: @escaping (A) -> B) -> Effect<B> {
         return Effect<B> { callback in
@@ -11,7 +11,7 @@ struct Effect<A> {
     }
 }
 
-func absurd<T>(_ never: Never) -> T {}
+fileprivate func absurd<T>(_ never: Never) -> T {}
 
 extension Effect where A == Never {
     func fireAndForget<T>() -> Effect<T> {

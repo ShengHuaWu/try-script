@@ -6,7 +6,8 @@ enum ArgumentParsingAction {
 
 let argumentParsingReducer: Reducer<ArgumentParsingState, ArgumentParsingAction> = { state, action in
     switch action {
-    case .parse:        
+    case .parse:
+        // TODO: Save parse results
         return [
             Current.argumentParsingClient()
             .parse()
