@@ -19,6 +19,7 @@ enum FileAction {
     case removeDir
 }
 
+// TODO: Move `run` to environment
 @discardableResult
 func run(command: String, arguments: [String] = [], at path: String = ".") throws -> String {
     let process = Process()
