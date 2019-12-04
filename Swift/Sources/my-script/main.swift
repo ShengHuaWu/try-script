@@ -1,25 +1,16 @@
 import Foundation
-import TSCUtility // External dependencies
 import MyLib1 // Local dependencies
 
 justAFunction() // This is from `MyLib1`
 
-struct ShellState {
-    // TODO: Treat `parser` as a dependency
-    let parser = ArgumentParser(commandName: "my-script", usage: "argument parsing & more ...", overview: "This is a testing script ✌️")
-    var enableOption: OptionArgument<Bool>?
-    var inputOption: OptionArgument<String>?
-}
+struct ShellState {}
 
 extension ShellState {
     var argumentParsing: ArgumentParsingState {
-        set {
-            enableOption = newValue.enableOption
-            inputOption = newValue.inputOption
-        }
+        set {}
         
         get {
-            ArgumentParsingState(parser: parser, enableOption: enableOption, inputOption: inputOption)
+            ArgumentParsingState()
         }
     }
     
@@ -71,7 +62,6 @@ let shellReducer: Reducer<ShellState, ShellAction> = combine(
 let store = Store<ShellState, ShellAction>(initialState: ShellState(), reducer: shellReducer)
 
 // Actual shell script
-store.send(.argumentParsing(.setUp))
 store.send(.argumentParsing(.parse))
 store.send(.file(.createDir))
 store.send(.file(.createFile))

@@ -1,5 +1,22 @@
-struct Effect<Action> {
-    let run: (@escaping (Action) -> Void) -> Void
+struct Effect<A> {
+    let run: (@escaping (A) -> Void) -> Void
+    
+    func map<B>(_ f: @escaping (A) -> B) -> Effect<B> {
+        return Effect<B> { callback in
+            self.run { a in
+                let b = f(a)
+                callback(b)
+            }
+        }
+    }
+}
+
+func absurd<T>(_ never: Never) -> T {}
+
+extension Effect where A == Never {
+    func fireAndForget<T>() -> Effect<T> {
+        return map(absurd)
+    }
 }
 
 typealias Reducer<State, Action> = (inout State, Action) -> [Effect<Action>]
