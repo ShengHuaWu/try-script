@@ -7,6 +7,7 @@ struct FileState {
     let newFile1 = "my-file1.txt"
     let newFile2 = "my-file2.txt"
     let newText = "this is a good text."
+    var shouldExit: Bool
 }
 
 enum FileAction {
@@ -17,6 +18,7 @@ enum FileAction {
     case listFiles
     case removeAllFiles
     case removeDir
+    case exit
 }
 
 let fileReducer: Reducer<FileState, FileAction> = { state, action in
@@ -25,50 +27,47 @@ let fileReducer: Reducer<FileState, FileAction> = { state, action in
         return [
             Current.commandClient()
                 .run(command: "mkdir", arguments: ["-p", state.newTempDir], at: state.downloadsDir)
-                .fireAndForget()
         ]
         
     case .createFile:
         return [
             Current.commandClient()
                 .run(command: "touch", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
-                .fireAndForget()
         ]
         
     case .insertTextToNewFile:
         return [
             Current.commandClient()
                 .run(command: "echo", arguments: [state.newText, ">>", state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
-                .fireAndForget()
         ]
         
     case .showContentOfNewFile:
         return [
             Current.commandClient()
                 .run(command: "cat", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
-                .fireAndForget()
         ]
         
     case .listFiles:
         return [
             Current.commandClient()
                 .run(command: "ls", arguments: ["-al"], at: "\(state.downloadsDir)/\(state.newTempDir)")
-                .fireAndForget()
         ]
         
     case .removeAllFiles:
         return [
             Current.commandClient()
                 .run(command: "rm", arguments: ["*"], at: "\(state.downloadsDir)/\(state.newTempDir)")
-                .fireAndForget()
         ]
         
     case .removeDir:
         return [
             Current.commandClient()
                 .run(command: "rmdir", arguments: [state.newTempDir], at: state.downloadsDir)
-                .fireAndForget()
         ]
         
+    case .exit:
+        state.shouldExit = true
+        
+        return []
     }
 }

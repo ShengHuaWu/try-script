@@ -2,7 +2,7 @@ import Foundation
 
 final class CommandClient {
     @discardableResult
-    func run(command: String, arguments: [String] = [], at path: String = ".") -> Effect<Never> {
+    func run(command: String, arguments: [String] = [], at path: String = ".") -> Effect<FileAction> {
         let process = Process()
         let outputPipe = Pipe()
         let errorPipe = Pipe()
@@ -19,8 +19,9 @@ final class CommandClient {
             do {
                 try process.run()
             } catch {
-                return Effect { _ in
+                return Effect { callback in
                     print("Run \(command) fails: \(error.localizedDescription)")
+                    callback(.exit)
                 }
             }
         } else {
@@ -30,8 +31,9 @@ final class CommandClient {
         
         let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
         if !errorData.isEmpty, let errorMessage = String(data: errorData, encoding: .utf8) {
-            return Effect { _ in
+            return Effect { callback in
                 print("Run \(command) error occurs: \(errorMessage)")
+                callback(.exit)
             }
         }
         

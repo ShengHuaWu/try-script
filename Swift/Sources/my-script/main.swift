@@ -6,6 +6,7 @@ justAFunction() // This is from `MyLib1`
 struct ShellState {
     var isEnabled = false
     var inputDir: String?
+    var shouldExit = false
 }
 
 extension ShellState {
@@ -13,18 +14,21 @@ extension ShellState {
         set {
             isEnabled = newValue.isEnabled
             inputDir = newValue.inputDir
+            shouldExit = newValue.shouldExit
         }
         
         get {
-            ArgumentParsingState()
+            ArgumentParsingState(isEnabled: isEnabled, inputDir: inputDir, shouldExit: shouldExit)
         }
     }
     
     var file: FileState {
-        set {}
+        set {
+            shouldExit = newValue.shouldExit
+        }
         
         get {
-            FileState()
+            FileState(shouldExit: shouldExit)
         }
     }
 }
@@ -61,17 +65,31 @@ extension ShellAction {
     }
 }
 
+func exitOnError(_ reducer: @escaping Reducer<ShellState, ShellAction>) -> Reducer<ShellState, ShellAction> {
+    return { state, action in
+        let effects = reducer(&state, action)
+        guard !state.shouldExit else {
+            return [
+                Effect { _ in fatalError("Exit script because of errors 😱") }
+            ]
+        }
+        
+        return effects
+    }
+}
+
 // Store initiative
 let shellReducer: Reducer<ShellState, ShellAction> = logging(
-    combine(
-        pullback(argumentParsingReducer, value: \.argumentParsing, action: \.argumentParsing),
-        pullback(fileReducer, value: \.file, action: \.file)
+    exitOnError(
+        combine(
+            pullback(argumentParsingReducer, value: \.argumentParsing, action: \.argumentParsing),
+            pullback(fileReducer, value: \.file, action: \.file)
+        )
     )
 )
 let store = Store<ShellState, ShellAction>(initialState: ShellState(), reducer: shellReducer)
 
 // Actual shell script
-// TODO: Exit when any error occurs
 [
     .argumentParsing(.parse),
     .file(.createDir),
