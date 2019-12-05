@@ -22,23 +22,17 @@ final class ArgumentParsingClient {
                                  completion: .filename)
     }
     
-    func parse() -> Effect<Never> {
+    func parse() -> Effect<ArgumentParsingAction> {
         let argsv = Array(CommandLine.arguments.dropFirst())
         do {
             let parguments = try parser.parse(argsv)
-            var enableOutput = ""
-            if let isEnabled = parguments.get(enableOption) {
-                enableOutput = "Enabled: \(isEnabled)"
-            }
+            let result: ParsingResult = (
+                isEnabled: parguments.get(enableOption) ?? false,
+                inputDir: parguments.get(inputOption)
+            )
             
-            var inputOutput = ""
-            if let filename = parguments.get(inputOption) {
-                inputOutput = "Using filename: \(filename)"
-            }
-            
-            return Effect { _ in
-                print(enableOutput)
-                print(inputOutput)
+            return Effect { callback in
+                callback(.setParsingResult(result))
             }
             
         // TODO: Merge throwing logic, e.g. convenient method of `Effect`

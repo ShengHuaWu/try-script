@@ -3,11 +3,17 @@ import MyLib1 // Local dependencies
 
 justAFunction() // This is from `MyLib1`
 
-struct ShellState {}
+struct ShellState {
+    var isEnabled = false
+    var inputDir: String?
+}
 
 extension ShellState {
     var argumentParsing: ArgumentParsingState {
-        set {}
+        set {
+            isEnabled = newValue.isEnabled
+            inputDir = newValue.inputDir
+        }
         
         get {
             ArgumentParsingState()
@@ -65,6 +71,7 @@ let shellReducer: Reducer<ShellState, ShellAction> = logging(
 let store = Store<ShellState, ShellAction>(initialState: ShellState(), reducer: shellReducer)
 
 // Actual shell script
+// TODO: Exit when any error occurs
 [
     .argumentParsing(.parse),
     .file(.createDir),

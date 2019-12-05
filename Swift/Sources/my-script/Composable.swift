@@ -1,5 +1,5 @@
 struct Effect<A> {
-    let run: (@escaping (A) -> Void) -> Void // TODO: Append `throws` here to stop sending actions
+    let run: (@escaping (A) -> Void) -> Void
     
     func map<B>(_ f: @escaping (A) -> B) -> Effect<B> {
         return Effect<B> { callback in
