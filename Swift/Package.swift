@@ -14,7 +14,8 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-package-manager", .revision("528da5147ca82164acbd4cecdc8e69322d96d3e2")),
     ],
     targets: [
-        .target(name: "my-script", dependencies: ["Composable", "ArgumentParsing", "FileOperations"]),
+        .target(name: "my-script",
+                dependencies: ["Composable", "ArgumentParsing", "FileOperations"]),
         .target(name: "Composable"),
         .target(name: "ArgumentParsing", dependencies: ["Composable", "TSCUtility"]),
         .target(name: "FileOperations", dependencies: ["Composable"])

@@ -1,4 +1,6 @@
+// TODO: There must be a way to reuse environemnt
 struct Environment {
+    // TODO: Change it to a cluster of functions, instead of a class
     var commandClient: () -> CommandClient
 }
 

@@ -5,7 +5,7 @@ import FileOperations
 struct ShellState {
     var isEnabled = false
     var inputDir: String?
-    var shouldExit = false
+    var shouldExit = false // TODO: Convert to error message
 }
 
 extension ShellState {
