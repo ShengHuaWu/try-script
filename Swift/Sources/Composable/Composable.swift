@@ -1,5 +1,9 @@
-struct Effect<A> {
-    let run: (@escaping (A) -> Void) -> Void
+public struct Effect<A> {
+    fileprivate let run: (@escaping (A) -> Void) -> Void
+    
+    public init(_ run: @escaping (@escaping (A) -> Void) -> Void) {
+        self.run = run
+    }
     
     func map<B>(_ f: @escaping (A) -> B) -> Effect<B> {
         return Effect<B> { callback in
@@ -11,26 +15,26 @@ struct Effect<A> {
     }
 }
 
-fileprivate func absurd<T>(_ never: Never) -> T {}
-
 extension Effect where A == Never {
-    func fireAndForget<T>() -> Effect<T> {
+    private func absurd<T>(_ never: Never) -> T {}
+    
+    public func fireAndForget<T>() -> Effect<T> {
         return map(absurd)
     }
 }
 
-typealias Reducer<State, Action> = (inout State, Action) -> [Effect<Action>]
+public typealias Reducer<State, Action> = (inout State, Action) -> [Effect<Action>]
 
-final class Store<State, Action> {
+public final class Store<State, Action> {
     private let reducer: Reducer<State, Action>
     private var state: State
     
-    init(initialState: State, reducer: @escaping Reducer<State, Action>) {
+    public init(initialState: State, reducer: @escaping Reducer<State, Action>) {
         self.reducer = reducer
         self.state = initialState
     }
     
-    func send(_ action: Action) {
+    public func send(_ action: Action) {
         let effects = reducer(&state, action)
         effects.forEach { effect in
             effect.run(self.send)
@@ -38,13 +42,13 @@ final class Store<State, Action> {
     }
 }
 
-func combine<State, Action>(_ reducers: Reducer<State, Action>...) -> Reducer<State, Action> {
+public func combine<State, Action>(_ reducers: Reducer<State, Action>...) -> Reducer<State, Action> {
     return { state, action in
         return reducers.flatMap { $0(&state, action) }
     }
 }
 
-func pullback<GlobalState, LocalState, GlobalAction, LocalAction>(
+public func pullback<GlobalState, LocalState, GlobalAction, LocalAction>(
     _ reducer: @escaping Reducer<LocalState, LocalAction>,
     value: WritableKeyPath<GlobalState, LocalState>,
     action: WritableKeyPath<GlobalAction, LocalAction?>) -> Reducer<GlobalState, GlobalAction> {
@@ -65,7 +69,7 @@ func pullback<GlobalState, LocalState, GlobalAction, LocalAction>(
     }
 }
 
-func logging<State, Action>(_ reducer: @escaping Reducer<State, Action>) -> Reducer<State, Action> {
+public func logging<State, Action>(_ reducer: @escaping Reducer<State, Action>) -> Reducer<State, Action> {
     return { state, action in
         let effects = reducer(&state, action)
         let newState = state

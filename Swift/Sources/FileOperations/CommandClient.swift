@@ -1,4 +1,5 @@
 import Foundation
+import Composable
 
 final class CommandClient {
     @discardableResult

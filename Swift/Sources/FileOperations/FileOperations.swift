@@ -1,16 +1,21 @@
 import Foundation
+import Composable
 
-struct FileState {
+public struct FileState {
     let downloadsDir = "~/Downloads"
     let newTempDir = "NewTemp"
     let newFile = "my-file.txt"
     let newFile1 = "my-file1.txt"
     let newFile2 = "my-file2.txt"
     let newText = "this is a good text."
-    var shouldExit: Bool
+    public var shouldExit: Bool
+    
+    public init(shouldExit: Bool) {
+        self.shouldExit = shouldExit
+    }
 }
 
-enum FileAction {
+public enum FileAction {
     case createDir
     case createFile
     case insertTextToNewFile
@@ -21,7 +26,7 @@ enum FileAction {
     case exit
 }
 
-let fileReducer: Reducer<FileState, FileAction> = { state, action in
+public let fileReducer: Reducer<FileState, FileAction> = { state, action in
     switch action {
     case .createDir:
         return [

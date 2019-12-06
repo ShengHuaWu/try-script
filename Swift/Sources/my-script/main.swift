@@ -1,7 +1,6 @@
-import Foundation
-import MyLib1 // Local dependencies
-
-justAFunction() // This is from `MyLib1`
+import Composable
+import ArgumentParsing
+import FileOperations
 
 struct ShellState {
     var isEnabled = false

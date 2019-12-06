@@ -1,13 +1,10 @@
 struct Environment {
+    // TODO: Change it to a cluster of functions, instead of a class
     var argumentParsingClient: () -> ArgumentParsingClient
-    var commandClient: () -> CommandClient
 }
 
 extension Environment {
-    static let live = Environment(
-        argumentParsingClient: { ArgumentParsingClient() },
-        commandClient: { CommandClient() }
-    )
+    static let live = Environment(argumentParsingClient: { ArgumentParsingClient() })
 }
 
 #if DEBUG

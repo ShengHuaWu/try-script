@@ -1,4 +1,5 @@
 import Foundation
+import Composable
 import TSCUtility // External dependency
 // Arguments (options) parsing
 // For more parsing rules, please read https://rderik.com/blog/command-line-argument-parsing-using-swift-package-manager-s/
