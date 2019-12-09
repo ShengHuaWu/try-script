@@ -1,9 +1,13 @@
 import Foundation
 import Composable
 
-final class CommandClient {
-    @discardableResult
-    func run(command: String, arguments: [String] = [], at path: String = ".") -> Effect<FileAction> {
+struct CommandError: Error {
+    let message: String
+}
+
+// TODO: Do we still need this?
+struct CommandClient {
+    func run(command: String, arguments: [String] = [], at path: String) -> Effect<Result<String, CommandError>> {
         let process = Process()
         let outputPipe = Pipe()
         let errorPipe = Pipe()
@@ -21,7 +25,7 @@ final class CommandClient {
                 try process.run()
             } catch {
                 return Effect { callback in
-                    callback(.exit("Run \(command) fails: \(error.localizedDescription)"))
+                    callback(.failure(.init(message: "Run \(command) fails: \(error.localizedDescription)")))
                 }
             }
         } else {
@@ -32,17 +36,15 @@ final class CommandClient {
         let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
         if !errorData.isEmpty, let errorMessage = String(data: errorData, encoding: .utf8) {
             return Effect { callback in
-                callback(.exit("Run \(command) error occurs: \(errorMessage)"))
+                callback(.failure(.init(message: "Run \(command) error occurs: \(errorMessage)")))
             }
         }
         
         let data = outputPipe.fileHandleForReading.readDataToEndOfFile()
         let output = String(data: data, encoding: .utf8) ?? "There is no output for \(command)"
         
-        return Effect { _ in
-            if !output.isEmpty {
-                print(output)
-            }
+        return Effect { callback in
+            callback(.success(output))
         }
     }
 }

@@ -23,6 +23,7 @@ public enum FileAction {
     case listFiles
     case removeAllFiles
     case removeDir
+    case print(String)
     case exit(String)
 }
 
@@ -30,44 +31,45 @@ public let fileReducer: Reducer<FileState, FileAction> = { state, action in
     switch action {
     case .createDir:
         return [
-            Current.commandClient()
-                .run(command: "mkdir", arguments: ["-p", state.newTempDir], at: state.downloadsDir)
+            Current.runCommand("mkdir", ["-p", state.newTempDir], state.downloadsDir)
         ]
         
     case .createFile:
         return [
-            Current.commandClient()
-                .run(command: "touch", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
+            Current.runCommand("touch", [state.newFile], "\(state.downloadsDir)/\(state.newTempDir)")
         ]
         
     case .insertTextToNewFile:
         return [
-            Current.commandClient()
-                .run(command: "echo", arguments: [state.newText, ">>", state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
+            Current.runCommand("echo", [state.newText, ">>", state.newFile], "\(state.downloadsDir)/\(state.newTempDir)")
         ]
         
     case .showContentOfNewFile:
         return [
-            Current.commandClient()
-                .run(command: "cat", arguments: [state.newFile], at: "\(state.downloadsDir)/\(state.newTempDir)")
+            Current.runCommand("cat", [state.newFile], "\(state.downloadsDir)/\(state.newTempDir)")
         ]
         
     case .listFiles:
         return [
-            Current.commandClient()
-                .run(command: "ls", arguments: ["-al"], at: "\(state.downloadsDir)/\(state.newTempDir)")
+            Current.runCommand("ls", ["-al"], "\(state.downloadsDir)/\(state.newTempDir)")
         ]
         
     case .removeAllFiles:
         return [
-            Current.commandClient()
-                .run(command: "rm", arguments: ["*"], at: "\(state.downloadsDir)/\(state.newTempDir)")
+            Current.runCommand("rm", ["*"], "\(state.downloadsDir)/\(state.newTempDir)")
         ]
         
     case .removeDir:
         return [
-            Current.commandClient()
-                .run(command: "rmdir", arguments: [state.newTempDir], at: state.downloadsDir)
+            Current.runCommand("rmdir", [state.newTempDir], state.downloadsDir)
+        ]
+        
+    case let .print(output):
+        
+        return [
+            Effect { _ in
+                print(output)
+            }
         ]
         
     case let .exit(message):
