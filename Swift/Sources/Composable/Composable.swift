@@ -5,7 +5,7 @@ public struct Effect<A> {
         self.run = run
     }
     
-    func map<B>(_ f: @escaping (A) -> B) -> Effect<B> {
+    public func map<B>(_ f: @escaping (A) -> B) -> Effect<B> {
         return Effect<B> { callback in
             self.run { a in
                 let b = f(a)

@@ -24,8 +24,7 @@ public let argumentParsingReducer: Reducer<ArgumentParsingState, ArgumentParsing
     switch action {
     case .parse:
         return [
-            Current.argumentParsingClient()
-            .parse()
+            Current.parseArguments()
         ]
         
     case let .setParsingResult(result):

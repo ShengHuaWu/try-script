@@ -4,7 +4,11 @@ import TSCUtility // External dependency
 // Arguments (options) parsing
 // For more parsing rules, please read https://rderik.com/blog/command-line-argument-parsing-using-swift-package-manager-s/
 
-final class ArgumentParsingClient {
+struct ArgumentParsingError: Error {
+    let message: String
+}
+
+struct ArgumentParsingClient {
     private let parser = ArgumentParser(commandName: "my-script", usage: "argument parsing & more ...", overview: "This is a testing script ✌️")
     private var enableOption: OptionArgument<Bool>
     private var inputOption: OptionArgument<String>
@@ -23,7 +27,7 @@ final class ArgumentParsingClient {
                                  completion: .filename)
     }
     
-    func parse() -> Effect<ArgumentParsingAction> {
+    func parse() -> Effect<Result<ParsingResult, ArgumentParsingError>> {
         let argsv = Array(CommandLine.arguments.dropFirst())
         do {
             let parguments = try parser.parse(argsv)
@@ -33,21 +37,21 @@ final class ArgumentParsingClient {
             )
             
             return Effect { callback in
-                callback(.setParsingResult(result))
+                callback(.success(result))
             }
             
         // TODO: Merge throwing logic, e.g. convenient method of `Effect`
         } catch ArgumentParserError.expectedValue(let value) {
             return Effect { callback in
-                callback(.exit("Missing value for argument \(value)."))
+                callback(.failure(.init(message: "Missing value for argument \(value).")))
             }
         } catch ArgumentParserError.expectedArguments(let parser, let stringArray) {
             return Effect { callback in
-                callback(.exit("Parser: \(parser) Missing arguments: \(stringArray.joined())."))
+                callback(.failure(.init(message: "Parser: \(parser) Missing arguments: \(stringArray.joined()).")))
             }
         } catch {
             return Effect { callback in
-                callback(.exit("Error occurs: \n\(error.localizedDescription)"))
+                callback(.failure(.init(message: "Error occurs: \n\(error.localizedDescription)")))
             }
         }
     }

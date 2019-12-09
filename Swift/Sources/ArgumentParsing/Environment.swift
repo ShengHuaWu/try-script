@@ -1,10 +1,21 @@
+import Composable
+
 struct Environment {
-    // TODO: Change it to a cluster of functions, instead of a class
-    var argumentParsingClient: () -> ArgumentParsingClient
+    var parseArguments: () -> Effect<ArgumentParsingAction>
 }
 
 extension Environment {
-    static let live = Environment(argumentParsingClient: { ArgumentParsingClient() })
+    static let live = Environment(parseArguments: {        
+        return ArgumentParsingClient().parse().map { result in
+            switch result {
+            case let .success(result):
+                return .setParsingResult(result)
+            case let .failure(error):
+                return .exit(error.message)
+            }
+        }
+        
+    })
 }
 
 #if DEBUG
