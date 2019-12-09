@@ -39,18 +39,15 @@ final class ArgumentParsingClient {
         // TODO: Merge throwing logic, e.g. convenient method of `Effect`
         } catch ArgumentParserError.expectedValue(let value) {
             return Effect { callback in
-                print("Missing value for argument \(value).")
-                callback(.exit)
+                callback(.exit("Missing value for argument \(value)."))
             }
         } catch ArgumentParserError.expectedArguments(let parser, let stringArray) {
             return Effect { callback in
-                print("Parser: \(parser) Missing arguments: \(stringArray.joined()).")
-                callback(.exit)
+                callback(.exit("Parser: \(parser) Missing arguments: \(stringArray.joined())."))
             }
         } catch {
             return Effect { callback in
-                print("Error occurs: \n\(error.localizedDescription)")
-                callback(.exit)
+                callback(.exit("Error occurs: \n\(error.localizedDescription)"))
             }
         }
     }

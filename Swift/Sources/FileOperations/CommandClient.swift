@@ -21,8 +21,7 @@ final class CommandClient {
                 try process.run()
             } catch {
                 return Effect { callback in
-                    print("Run \(command) fails: \(error.localizedDescription)")
-                    callback(.exit)
+                    callback(.exit("Run \(command) fails: \(error.localizedDescription)"))
                 }
             }
         } else {
@@ -33,8 +32,7 @@ final class CommandClient {
         let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
         if !errorData.isEmpty, let errorMessage = String(data: errorData, encoding: .utf8) {
             return Effect { callback in
-                print("Run \(command) error occurs: \(errorMessage)")
-                callback(.exit)
+                callback(.exit("Run \(command) error occurs: \(errorMessage)"))
             }
         }
         

@@ -5,7 +5,7 @@ import FileOperations
 struct ShellState {
     var isEnabled = false
     var inputDir: String?
-    var shouldExit = false // TODO: Convert to error message
+    var exitMessage: String?
 }
 
 extension ShellState {
@@ -13,21 +13,21 @@ extension ShellState {
         set {
             isEnabled = newValue.isEnabled
             inputDir = newValue.inputDir
-            shouldExit = newValue.shouldExit
+            exitMessage = newValue.exitMessage
         }
         
         get {
-            ArgumentParsingState(isEnabled: isEnabled, inputDir: inputDir, shouldExit: shouldExit)
+            ArgumentParsingState(isEnabled: isEnabled, inputDir: inputDir, exitMessage: exitMessage)
         }
     }
     
     var file: FileState {
         set {
-            shouldExit = newValue.shouldExit
+            exitMessage = newValue.exitMessage
         }
         
         get {
-            FileState(shouldExit: shouldExit)
+            FileState(exitMessage: exitMessage)
         }
     }
 }
@@ -67,9 +67,9 @@ extension ShellAction {
 func exitOnError(_ reducer: @escaping Reducer<ShellState, ShellAction>) -> Reducer<ShellState, ShellAction> {
     return { state, action in
         let effects = reducer(&state, action)
-        guard !state.shouldExit else {
+        if let message = state.exitMessage, !message.isEmpty {
             return [
-                Effect { _ in fatalError("Exit script because of errors 😱") }
+                Effect { _ in fatalError("😱 Exit script because of \(message) ") }
             ]
         }
         

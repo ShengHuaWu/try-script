@@ -3,12 +3,12 @@ import Composable
 public struct ArgumentParsingState {
     public var isEnabled: Bool
     public var inputDir: String?
-    public var shouldExit: Bool
+    public var exitMessage: String?
     
-    public init(isEnabled: Bool, inputDir: String?, shouldExit: Bool) {
+    public init(isEnabled: Bool, inputDir: String?, exitMessage: String?) {
         self.isEnabled = isEnabled
         self.inputDir = inputDir
-        self.shouldExit = shouldExit
+        self.exitMessage = exitMessage
     }
 }
 
@@ -17,7 +17,7 @@ public typealias ParsingResult = (isEnabled: Bool, inputDir: String?)
 public enum ArgumentParsingAction {
     case parse
     case setParsingResult(ParsingResult)
-    case exit
+    case exit(String)
 }
 
 public let argumentParsingReducer: Reducer<ArgumentParsingState, ArgumentParsingAction> = { state, action in
@@ -34,8 +34,8 @@ public let argumentParsingReducer: Reducer<ArgumentParsingState, ArgumentParsing
         
         return []
         
-    case .exit:
-        state.shouldExit = true
+    case let .exit(message):
+        state.exitMessage = message
         
         return []
     }

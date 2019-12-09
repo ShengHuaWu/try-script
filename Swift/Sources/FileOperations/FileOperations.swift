@@ -8,10 +8,10 @@ public struct FileState {
     let newFile1 = "my-file1.txt"
     let newFile2 = "my-file2.txt"
     let newText = "this is a good text."
-    public var shouldExit: Bool
+    public var exitMessage: String?
     
-    public init(shouldExit: Bool) {
-        self.shouldExit = shouldExit
+    public init(exitMessage: String?) {
+        self.exitMessage = exitMessage
     }
 }
 
@@ -23,7 +23,7 @@ public enum FileAction {
     case listFiles
     case removeAllFiles
     case removeDir
-    case exit
+    case exit(String)
 }
 
 public let fileReducer: Reducer<FileState, FileAction> = { state, action in
@@ -70,8 +70,8 @@ public let fileReducer: Reducer<FileState, FileAction> = { state, action in
                 .run(command: "rmdir", arguments: [state.newTempDir], at: state.downloadsDir)
         ]
         
-    case .exit:
-        state.shouldExit = true
+    case let .exit(message):
+        state.exitMessage = message
         
         return []
     }
