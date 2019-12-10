@@ -31,45 +31,42 @@ public let fileReducer: Reducer<FileState, FileAction> = { state, action in
     switch action {
     case .createDir:
         return [
-            Current.runCommand("mkdir", ["-p", state.newTempDir], state.downloadsDir)
+            Current.run(CommandInput(command: "mkdir", arguments: ["-p", state.newTempDir], path: state.downloadsDir))
         ]
         
     case .createFile:
         return [
-            Current.runCommand("touch", [state.newFile], "\(state.downloadsDir)/\(state.newTempDir)")
+            Current.run(CommandInput(command: "touch", arguments: [state.newFile], path: "\(state.downloadsDir)/\(state.newTempDir)"))
         ]
         
     case .insertTextToNewFile:
         return [
-            Current.runCommand("echo", [state.newText, ">>", state.newFile], "\(state.downloadsDir)/\(state.newTempDir)")
+            Current.run(CommandInput(command: "echo", arguments: [state.newText, ">>", state.newFile], path: "\(state.downloadsDir)/\(state.newTempDir)"))
         ]
         
     case .showContentOfNewFile:
         return [
-            Current.runCommand("cat", [state.newFile], "\(state.downloadsDir)/\(state.newTempDir)")
+            Current.run(CommandInput(command: "cat", arguments: [state.newFile], path: "\(state.downloadsDir)/\(state.newTempDir)"))
         ]
         
     case .listFiles:
         return [
-            Current.runCommand("ls", ["-al"], "\(state.downloadsDir)/\(state.newTempDir)")
+            Current.run(CommandInput(command: "ls", arguments: ["-al"], path: "\(state.downloadsDir)/\(state.newTempDir)"))
         ]
         
     case .removeAllFiles:
         return [
-            Current.runCommand("rm", ["*"], "\(state.downloadsDir)/\(state.newTempDir)")
+            Current.run(CommandInput(command: "rm", arguments: ["*"], path: "\(state.downloadsDir)/\(state.newTempDir)"))
         ]
         
     case .removeDir:
         return [
-            Current.runCommand("rmdir", [state.newTempDir], state.downloadsDir)
+            Current.run(CommandInput(command: "rmdir", arguments: [state.newTempDir], path: state.downloadsDir))
         ]
         
     case let .print(output):
-        
         return [
-            Effect { _ in
-                print(output)
-            }
+            Current.print(output).fireAndForget()
         ]
         
     case let .exit(message):

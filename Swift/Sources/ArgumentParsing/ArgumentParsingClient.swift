@@ -35,8 +35,6 @@ struct ArgumentParsingClient {
             return Effect { callback in
                 callback(.success(result))
             }
-            
-        // TODO: Merge throwing logic, e.g. convenient method of `Effect`
         } catch ArgumentParserError.expectedValue(let value) {
             return Effect { callback in
                 callback(.failure("Missing value for argument \(value)."))
@@ -47,7 +45,7 @@ struct ArgumentParsingClient {
             }
         } catch {
             return Effect { callback in
-                callback(.failure("Error occurs: \n\(error.localizedDescription)"))
+                callback(.failure("Error occurs: \n\(error.localizedDescription)."))
             }
         }
     }

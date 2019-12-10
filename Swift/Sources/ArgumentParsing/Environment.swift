@@ -7,6 +7,7 @@ struct Environment {
 extension Environment {
     static let live = Environment(parseArguments: {        
         return ArgumentParsingClient().parse().map { result in
+            // TODO: Move this to `Effect` extension
             switch result {
             case let .success(result):
                 return .setParsingResult(result)
@@ -14,7 +15,6 @@ extension Environment {
                 return .exit(error.message)
             }
         }
-        
     })
 }
 
