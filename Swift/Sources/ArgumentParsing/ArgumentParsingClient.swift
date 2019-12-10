@@ -4,10 +4,6 @@ import TSCUtility // External dependency
 // Arguments (options) parsing
 // For more parsing rules, please read https://rderik.com/blog/command-line-argument-parsing-using-swift-package-manager-s/
 
-struct ArgumentParsingError: Error {
-    let message: String
-}
-
 struct ArgumentParsingClient {
     private let parser = ArgumentParser(commandName: "my-script", usage: "argument parsing & more ...", overview: "This is a testing script ✌️")
     private var enableOption: OptionArgument<Bool>
@@ -27,7 +23,7 @@ struct ArgumentParsingClient {
                                  completion: .filename)
     }
     
-    func parse() -> Effect<Result<ParsingResult, ArgumentParsingError>> {
+    func parse() -> Effect<Result<ParsingResult, EffectError>> {
         let argsv = Array(CommandLine.arguments.dropFirst())
         do {
             let parguments = try parser.parse(argsv)
@@ -43,15 +39,15 @@ struct ArgumentParsingClient {
         // TODO: Merge throwing logic, e.g. convenient method of `Effect`
         } catch ArgumentParserError.expectedValue(let value) {
             return Effect { callback in
-                callback(.failure(.init(message: "Missing value for argument \(value).")))
+                callback(.failure("Missing value for argument \(value)."))
             }
         } catch ArgumentParserError.expectedArguments(let parser, let stringArray) {
             return Effect { callback in
-                callback(.failure(.init(message: "Parser: \(parser) Missing arguments: \(stringArray.joined()).")))
+                callback(.failure("Parser: \(parser) Missing arguments: \(stringArray.joined())."))
             }
         } catch {
             return Effect { callback in
-                callback(.failure(.init(message: "Error occurs: \n\(error.localizedDescription)")))
+                callback(.failure("Error occurs: \n\(error.localizedDescription)"))
             }
         }
     }

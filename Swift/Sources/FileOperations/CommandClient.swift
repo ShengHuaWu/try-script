@@ -1,13 +1,9 @@
 import Foundation
 import Composable
 
-struct CommandError: Error {
-    let message: String
-}
-
 // TODO: Do we still need this?
 struct CommandClient {
-    func run(command: String, arguments: [String] = [], at path: String) -> Effect<Result<String, CommandError>> {
+    func run(command: String, arguments: [String] = [], at path: String) -> Effect<Result<String, EffectError>> {
         let process = Process()
         let outputPipe = Pipe()
         let errorPipe = Pipe()
@@ -25,7 +21,7 @@ struct CommandClient {
                 try process.run()
             } catch {
                 return Effect { callback in
-                    callback(.failure(.init(message: "Run \(command) fails: \(error.localizedDescription)")))
+                    callback(.failure("Run \(command) fails: \(error.localizedDescription)"))
                 }
             }
         } else {
@@ -36,7 +32,7 @@ struct CommandClient {
         let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
         if !errorData.isEmpty, let errorMessage = String(data: errorData, encoding: .utf8) {
             return Effect { callback in
-                callback(.failure(.init(message: "Run \(command) error occurs: \(errorMessage)")))
+                callback(.failure("Run \(command) error occurs: \(errorMessage)"))
             }
         }
         
