@@ -4,6 +4,8 @@ import TSCUtility // External dependency
 // Arguments (options) parsing
 // For more parsing rules, please read https://rderik.com/blog/command-line-argument-parsing-using-swift-package-manager-s/
 
+public typealias ParsingResult = (isEnabled: Bool, inputDir: String?)
+
 struct ArgumentParsingClient {
     private let parser = ArgumentParser(commandName: "my-script", usage: "argument parsing & more ...", overview: "This is a testing script ✌️")
     private var enableOption: OptionArgument<Bool>

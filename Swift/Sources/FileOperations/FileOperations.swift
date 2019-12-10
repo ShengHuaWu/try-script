@@ -31,37 +31,37 @@ public let fileReducer: Reducer<FileState, FileAction> = { state, action in
     switch action {
     case .createDir:
         return [
-            Current.run(CommandInput(command: "mkdir", arguments: ["-p", state.newTempDir], path: state.downloadsDir))
+            Current.run(CommandInput(command: "mkdir", arguments: ["-p", state.newTempDir], path: state.downloadsDir)).handleCommandResult()
         ]
         
     case .createFile:
         return [
-            Current.run(CommandInput(command: "touch", arguments: [state.newFile], path: "\(state.downloadsDir)/\(state.newTempDir)"))
+            Current.run(CommandInput(command: "touch", arguments: [state.newFile], path: "\(state.downloadsDir)/\(state.newTempDir)")).handleCommandResult()
         ]
         
     case .insertTextToNewFile:
         return [
-            Current.run(CommandInput(command: "echo", arguments: [state.newText, ">>", state.newFile], path: "\(state.downloadsDir)/\(state.newTempDir)"))
+            Current.run(CommandInput(command: "echo", arguments: [state.newText, ">>", state.newFile], path: "\(state.downloadsDir)/\(state.newTempDir)")).handleCommandResult()
         ]
         
     case .showContentOfNewFile:
         return [
-            Current.run(CommandInput(command: "cat", arguments: [state.newFile], path: "\(state.downloadsDir)/\(state.newTempDir)"))
+            Current.run(CommandInput(command: "cat", arguments: [state.newFile], path: "\(state.downloadsDir)/\(state.newTempDir)")).handleCommandResult()
         ]
         
     case .listFiles:
         return [
-            Current.run(CommandInput(command: "ls", arguments: ["-al"], path: "\(state.downloadsDir)/\(state.newTempDir)"))
+            Current.run(CommandInput(command: "ls", arguments: ["-al"], path: "\(state.downloadsDir)/\(state.newTempDir)")).handleCommandResult()
         ]
         
     case .removeAllFiles:
         return [
-            Current.run(CommandInput(command: "rm", arguments: ["*"], path: "\(state.downloadsDir)/\(state.newTempDir)"))
+            Current.run(CommandInput(command: "rm", arguments: ["*"], path: "\(state.downloadsDir)/\(state.newTempDir)")).handleCommandResult()
         ]
         
     case .removeDir:
         return [
-            Current.run(CommandInput(command: "rmdir", arguments: [state.newTempDir], path: state.downloadsDir))
+            Current.run(CommandInput(command: "rmdir", arguments: [state.newTempDir], path: state.downloadsDir)).handleCommandResult()
         ]
         
     case let .print(output):
@@ -73,5 +73,18 @@ public let fileReducer: Reducer<FileState, FileAction> = { state, action in
         state.exitMessage = message
         
         return []
+    }
+}
+
+extension Effect where A == Result<String, EffectError> {
+    func handleCommandResult() -> Effect<FileAction> {
+        return map { result in
+            switch result {
+            case let .success(output):
+                return .print(output)
+            case let .failure(error):
+                return .exit(error.message)
+            }
+        }
     }
 }

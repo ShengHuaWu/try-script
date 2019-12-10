@@ -12,8 +12,6 @@ public struct ArgumentParsingState {
     }
 }
 
-public typealias ParsingResult = (isEnabled: Bool, inputDir: String?)
-
 public enum ArgumentParsingAction {
     case parse
     case setParsingResult(ParsingResult)
@@ -23,9 +21,7 @@ public enum ArgumentParsingAction {
 public let argumentParsingReducer: Reducer<ArgumentParsingState, ArgumentParsingAction> = { state, action in
     switch action {
     case .parse:
-        return [
-            Current.parseArguments()
-        ]
+        return [ Current.parseArguments().handleParsingResult() ]
         
     case let .setParsingResult(result):
         state.isEnabled = result.isEnabled
@@ -37,5 +33,18 @@ public let argumentParsingReducer: Reducer<ArgumentParsingState, ArgumentParsing
         state.exitMessage = message
         
         return []
+    }
+}
+
+extension Effect where A == Result<ParsingResult, EffectError> {
+    func handleParsingResult() -> Effect<ArgumentParsingAction> {
+        return map { result in
+            switch result {
+            case let .success(result):
+                return .setParsingResult(result)
+            case let .failure(error):
+                return .exit(error.message)
+            }
+        }
     }
 }
