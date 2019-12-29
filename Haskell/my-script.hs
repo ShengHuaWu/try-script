@@ -21,8 +21,16 @@ main = do
   -- time <- datePwd
   -- print time
   -- print( "123" <> "789" ) -- `<>` is string concatenation
-  let cmd = "false"
-  x <- shell cmd empty
-  case x of
-      ExitSuccess   -> return ()
-      ExitFailure n -> die (cmd <> " failed with exit code: " <> repr n)
+  proc "mkdir" ["test"] empty
+  proc "ls" ["-la"] empty
+  -- Have to do pattern matching on `x`, 
+  -- becasue the last command will be return automatically
+  x <- proc "rmdir" ["test"] empty
+  case x of 
+    ExitSuccess   -> return ()
+    ExitFailure n -> die (repr n)
+  -- let cmd = "false"
+  -- x <- shell cmd empty
+  -- case x of
+  --     ExitSuccess   -> return ()
+  --     ExitFailure n -> die (cmd <> " failed with exit code: " <> repr n)
