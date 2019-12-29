@@ -16,8 +16,8 @@ datePwd = do
   dir <- pwd
   datefile dir -- do notation implicitly returns the value of the last command within a subroutine
 
-procTest :: IO ()
-procTest = do
+tryProc :: IO ()
+tryProc = do
   proc "mkdir" ["test"] empty
   proc "ls" ["-la"] empty
   -- Have to do pattern matching on `x`, 
@@ -27,8 +27,8 @@ procTest = do
     ExitSuccess   -> return ()
     ExitFailure n -> die ("ls failed with exit code: " <> repr n)
 
-viewTest :: IO ()
-viewTest = do
+tryView :: IO ()
+tryView = do
   -- The <|> symbol is Shell stream concatenation
   view (return 1 <|> return 2)
   view (ls "/Users/shenghuawu/Downloads" <|>  ls "/Users/shenghuawu/Development")
@@ -37,5 +37,5 @@ main = do
   -- time <- datePwd
   -- print time
   -- print( "123" <> "789" ) -- `<>` is string concatenation
-  -- procTest
-  viewTest
+  -- tryProc
+  tryView
