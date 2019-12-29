@@ -16,11 +16,8 @@ datePwd = do
   dir <- pwd
   datefile dir -- do notation implicitly returns the value of the last command within a subroutine
 
-main :: IO () -- Type signature (not necessary)
-main = do
-  -- time <- datePwd
-  -- print time
-  -- print( "123" <> "789" ) -- `<>` is string concatenation
+procTest :: IO ()
+procTest = do
   proc "mkdir" ["test"] empty
   proc "ls" ["-la"] empty
   -- Have to do pattern matching on `x`, 
@@ -28,9 +25,17 @@ main = do
   x <- proc "rmdir" ["test"] empty
   case x of 
     ExitSuccess   -> return ()
-    ExitFailure n -> die (repr n)
-  -- let cmd = "false"
-  -- x <- shell cmd empty
-  -- case x of
-  --     ExitSuccess   -> return ()
-  --     ExitFailure n -> die (cmd <> " failed with exit code: " <> repr n)
+    ExitFailure n -> die ("ls failed with exit code: " <> repr n)
+
+viewTest :: IO ()
+viewTest = do
+  -- The <|> symbol is Shell stream concatenation
+  view (return 1 <|> return 2)
+  view (ls "/Users/shenghuawu/Downloads" <|>  ls "/Users/shenghuawu/Development")
+
+main = do
+  -- time <- datePwd
+  -- print time
+  -- print( "123" <> "789" ) -- `<>` is string concatenation
+  -- procTest
+  viewTest
