@@ -32,10 +32,25 @@ tryView = do
   -- The <|> symbol is Shell stream concatenation
   view (return 1 <|> return 2)
   view (ls "/Users/shenghuawu/Downloads" <|>  ls "/Users/shenghuawu/Development")
+  view (select [1..10]) -- loop
+  view (mfilter even (select [1..10])) -- show even numbers
+
+inner :: Shell a
+inner = do
+  x <- select [1, 2]
+  y <- select [3, 4]
+  liftIO(print (x, y))
+  empty -- An Shell stream that produces 0 elements will short-circuit and prevent subsequent commands from being run.
+
+outer :: Shell ()
+outer = do
+  sh inner -- If you want to run a Shell stream just for its side effects, wrap the Shell with sh.
+  liftIO(echo "Show outer")
 
 main = do
   -- time <- datePwd
   -- print time
   -- print( "123" <> "789" ) -- `<>` is string concatenation
   -- tryProc
-  tryView
+  -- tryView
+  sh outer
