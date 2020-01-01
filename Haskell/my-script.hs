@@ -47,10 +47,30 @@ outer = do
   sh inner -- If you want to run a Shell stream just for its side effects, wrap the Shell with sh.
   liftIO(echo "Show outer")
 
+myProc :: MonadIO io => Text -> [Text] -> io ()
+myProc cmd args = do
+  x <- proc cmd args empty
+  case x of 
+    ExitSuccess   -> return ()
+    ExitFailure n -> die (cmd <> " failed with exit code: " <> repr n)
+
+tryFile :: IO ()
+tryFile = do
+  myProc "ls" ["-al"]
+  myProc "mkdir" ["test"]
+  myProc "ls" ["-al"]
+  myProc "touch" ["test/test.txt"]
+  myProc "ls" ["-al", "test"]
+  myProc "rm" ["test/test.txt"]
+  myProc "ls" ["-al", "test"]
+  myProc "rmdir" ["test"]
+  myProc "ls" ["-al"]
+
 main = do
   -- time <- datePwd
   -- print time
   -- print( "123" <> "789" ) -- `<>` is string concatenation
   -- tryProc
   -- tryView
-  sh outer
+  -- sh outer
+  tryFile
