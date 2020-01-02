@@ -67,6 +67,19 @@ tryFile = do
   myProc "rmdir" ["test"]
   myProc "ls" ["-al"]
 
+data MyPoint = MyPoint { xf :: Float, yf :: Float } deriving (Show)
+data MySize = MySize { wf :: Float, hf :: Float} deriving (Show)
+data MyEnum = L MyPoint | R MySize deriving (Show)
+
+tryType :: IO ()
+tryType = do
+  let p = MyPoint { xf = 100.0, yf = 10.5 }
+  let s = MySize { wf = 50.5, hf = 100.0 }
+  print(show p <> show s)
+
+  let m = L p
+  print(m)
+
 main = do
   -- time <- datePwd
   -- print time
@@ -74,4 +87,5 @@ main = do
   -- tryProc
   -- tryView
   -- sh outer
-  tryFile
+  -- tryFile
+  tryType
