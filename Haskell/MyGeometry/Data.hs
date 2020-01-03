@@ -1,4 +1,9 @@
-module MyGeometry (
+-- It is important to align the module name with the folder structure, for example,
+-- MyGeometry
+--      ├── Data.hs (modeul MyGeometry.Data)
+--      └── TryOut.hs (module MyGeometry.TryOut)
+
+module MyGeometry.Data (
     MyPoint (..),
     MySize (..),
     MyEnum (..)

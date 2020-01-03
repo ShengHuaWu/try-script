@@ -6,7 +6,7 @@
 -- https://hackage.haskell.org/package/turtle-1.5.15/docs/Turtle-Tutorial.html
 
 import Turtle
-import MyGeometry
+import MyGeometry.TryOut
 
 myFunc :: Integer -> Integer
 myFunc i = i + 1
@@ -68,15 +68,6 @@ tryFile = do
   myProc "rmdir" ["test"]
   myProc "ls" ["-al"]
 
-tryType :: IO ()
-tryType = do
-  let p = MyPoint { xf = 100.0, yf = 10.5 } -- From module `MyGeometry`
-  let s = MySize { wf = 50.5, hf = 100.0 } -- From module `MyGeometry`
-  print(show p <> show s)
-
-  let m = L p -- From module `MyGeometry`
-  print(m)
-
 main = do
   -- time <- datePwd
   -- print time
@@ -85,4 +76,4 @@ main = do
   -- tryView
   -- sh outer
   -- tryFile
-  tryType
+  tryType -- From module `MyGeometry.TryOut`
