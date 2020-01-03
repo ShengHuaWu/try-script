@@ -6,6 +6,7 @@
 -- https://hackage.haskell.org/package/turtle-1.5.15/docs/Turtle-Tutorial.html
 
 import Turtle
+import MyGeometry
 
 myFunc :: Integer -> Integer
 myFunc i = i + 1
@@ -67,17 +68,13 @@ tryFile = do
   myProc "rmdir" ["test"]
   myProc "ls" ["-al"]
 
-data MyPoint = MyPoint { xf :: Float, yf :: Float } deriving (Show)
-data MySize = MySize { wf :: Float, hf :: Float} deriving (Show)
-data MyEnum = L MyPoint | R MySize deriving (Show)
-
 tryType :: IO ()
 tryType = do
-  let p = MyPoint { xf = 100.0, yf = 10.5 }
-  let s = MySize { wf = 50.5, hf = 100.0 }
+  let p = MyPoint { xf = 100.0, yf = 10.5 } -- From module `MyGeometry`
+  let s = MySize { wf = 50.5, hf = 100.0 } -- From module `MyGeometry`
   print(show p <> show s)
 
-  let m = L p
+  let m = L p -- From module `MyGeometry`
   print(m)
 
 main = do
